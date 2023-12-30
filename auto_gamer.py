@@ -30,7 +30,7 @@ class MyPet():
         self.root.attributes("-topmost",1)
         self.root.wm_attributes("-transparentcolor",TRANSCOLOUR)
         self.root.overrideredirect(True)
-        self.root.geometry("200x200+{}+{}".format(100,100))
+        self.root.geometry("450x897+{}+{}".format(100,100))
         self.root.config(background="red")
 
         
@@ -54,6 +54,12 @@ class MyPet():
             command=self.on_runsolve
         ).pack(side="left")
 
+        tk.Button(
+            frame,
+            text="TEST",
+            command=self.on_runtest
+        ).pack(side="left")
+
         self.label1 = label1
         self.frame = frame
 
@@ -61,7 +67,7 @@ class MyPet():
         self.canvas.pack(fill=tk.BOTH,expand=tk.Y)
         self.canvas.config(background="red")
 
-        self.last_rect = self.canvas.create_rectangle(0,0,200,200,fill=TRANSCOLOUR)
+        self.last_rect = self.canvas.create_rectangle(0,0,450,897,fill=TRANSCOLOUR)
 
         
         self.on_statetrans(self.IDLE)
@@ -211,6 +217,8 @@ class MyPet():
                     # self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
                     self.debug.append(self.canvas.create_text(l,t, text="%d"%(index), anchor='sw',fill='red'))
 
+        self.pos_matrix = pos_matrix
+
         if not(error):
 
             ## Step2: solve
@@ -220,11 +228,73 @@ class MyPet():
             self.root.after(50, self.run_solution)
 
         pass
- 
+    def on_runtest(self):
+        
+        solution = []
+        matrix = self.pos_matrix
+
+        def findblocks(row, col, targetsum):
+            matrix[row][col]
+
+            cols = []
+
+            r = row+1
+            c = col-1
+            while(r > row) and (c < len(matrix[0])-1):
+                c += 1
+                cols.append(c)
+                # Test
+                sum = 0 
+                r = row-1
+                while(sum < targetsum) and (r < len(matrix)-1):
+                    r += 1
+                    for cc in cols:
+                        sum += matrix[r][cc]
+                pass
+            
+                if (sum == targetsum):
+                    solution.append(((row,col),(r,c)))
+                    for rr in range(row, r+1):
+                        for cc in range(col, c+1):
+                            matrix[rr][cc] = 0
+            pass
+        
+        last_solution_steps = -1
+        if (last_solution_steps < len(solution)):
+            last_solution_steps = len(solution)
+            # repeat search 
+            for row in range(len(matrix)):
+                for col in range(len(matrix[0])):
+                    findblocks(row,col,10)
+                pass
+            pass
+        pass
+
+        # show Debuginfo
+        csx = self.canvas.winfo_rootx()
+        csy = self.canvas.winfo_rooty()
+
+        if hasattr(self,"debug"):
+            for ele in self.debug:
+                self.canvas.delete(ele)
+        self.debug=[]
+
+        try:
+            step = solution.pop(0)
+            x1 = (step[0][1] +0.5) * GRIDX+ OFFSETX
+            y1 = (step[0][0] +0.5) * GRIDY+ OFFSETY
+            x2 = (step[1][1] +0.5) * GRIDX+ OFFSETX
+            y2 = (step[1][0] +0.5) * GRIDY+ OFFSETY
+
+            self.debug.append(self.canvas.create_rectangle(x1, y1, x2, y2))
+
+        except :
+            pass
+        pass
     def solve(self, matrix):
         solution = []
 
-        def find_in_neighbour(row,col,target):
+        def findpair_in_neighbour(row,col,target):
             candi =[]
 
             r = row ; c = col
@@ -258,18 +328,57 @@ class MyPet():
                     matrix[r][c] = 0
                     break
         
-        # first 
-        for row in range(len(matrix)):
-            for col in range(len(matrix[0])):
-                val = matrix[row][col]
-                if (val >= 5):
-                    find_in_neighbour(row,col, 10-val)
-        # second
-        for row in range(len(matrix)):
-            for col in range(len(matrix[0])):
-                val = matrix[row][col]
-                if (val >= 5):
-                    find_in_neighbour(row,col, 10-val)
+        last_solution_steps = -1
+        while(last_solution_steps < len(solution)):
+            last_solution_steps = len(solution)
+            # repeat search 
+            for row in range(len(matrix)):
+                for col in range(len(matrix[0])):
+                    val = matrix[row][col]
+                    if (val >= 5):
+                        findpair_in_neighbour(row,col, 10-val)
+                    pass
+                pass
+            pass
+        pass
+
+        def findblocks(row, col, targetsum):
+            matrix[row][col]
+
+            cols = []
+
+            r = row+1
+            c = col-1
+            while(r > row) and (c < len(matrix[0])-1):
+                c += 1
+                cols.append(c)
+                # Test
+                sum = 0 
+                r = row-1
+                while(sum < targetsum) and (r < len(matrix)-1):
+                    r += 1
+                    for cc in cols:
+                        sum += matrix[r][cc]
+                pass
+            
+                if (sum == targetsum):
+                    solution.append(((row,col),(r,c)))
+                    for rr in range(row, r+1):
+                        for cc in range(col, c+1):
+                            matrix[rr][cc] = 0
+            pass
+        
+        last_solution_steps = -1
+        if (last_solution_steps < len(solution)):
+            last_solution_steps = len(solution)
+            # repeat search 
+            for row in range(len(matrix)):
+                for col in range(len(matrix[0])):
+                    findblocks(row,col,10)
+                pass
+            pass
+        pass
+        
         return solution
 
 
