@@ -148,6 +148,7 @@ class MyPet():
         pass
 
     def on_runsolve(self):
+        error = False
         ## Step1: sample
         canvas_range = (
             self.canvas.winfo_rootx(),
@@ -159,6 +160,11 @@ class MyPet():
         #  matrix 16*10  LT (20,137) RB (398,767)
         pos_matrix = [ [0 for _ in range(10)]  for _ in range(16)]
 
+        if hasattr(self,"debug"):
+            for ele in self.debug:
+                self.canvas.delete(ele)
+        self.debug=[]
+        
         for index in range(1,9):
             pos_arr = pyautogui.locateAllOnScreen(
                 "./res/image_%d.png"%index, 
@@ -175,19 +181,27 @@ class MyPet():
                 column = round((pt.x - csx - OFFSETX)/GRIDX + 0.5)-1
                 row = round((pt.y - csy - OFFSETY)/GRIDY + 0.5)-1
 
-                pos_matrix[row][column] = index
+                try:
+                    pos_matrix[row][column] = index
+                except:
+                    error = True
 
-        ## Step2: solve
-        solution = self.solve(pos_matrix)
+                l,t,w,h = (pos.left-csx,pos.top-csy,pos.width,pos.height)
+                self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
+                self.debug.append(self.canvas.create_text(l,t, text="%d"%(index), anchor='sw',fill='red'))
 
-        ## Step3: run solution
-        self.run_solution(solution)
+        if not(error):
+            pass
+        # ## Step2: solve
+        # solution = self.solve(pos_matrix)
+
+        # ## Step3: run solution
+        # self.run_solution(solution)
 
         pass
-
+ 
     def solve(self, matrix):
         solution = []
-
         solution.append(((1,1),(1,2)))
         solution.append(((2,2),(3,2)))
         return solution

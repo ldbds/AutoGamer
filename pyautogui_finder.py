@@ -98,15 +98,14 @@ class MyPet():
             pass
 
     def run_solve(self):
-        self.targetpx = pyautogui.screenshot()
 
         self.on_statetrans(self.RUNNING)
-
         self.on_imagesearch()
 
         pass
 
     def on_imagesearch(self):
+        self.targetpx = pyautogui.screenshot()
         ptx , pty = pyautogui.position() 
 
         csx = self.canvas.winfo_rootx()
