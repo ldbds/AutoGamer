@@ -10,6 +10,8 @@ from PIL import Image, ImageOps
 
 TRANSCOLOUR = "white"
 
+OPTION_DEBUG = True
+
 OFFSETX = 20
 OFFSETY = 137
 GRIDX = 42
@@ -170,6 +172,11 @@ class MyPet():
             self.canvas.winfo_height()
             )
 
+        screenshot = screenshot.crop((canvas_range[0], canvas_range[1], canvas_range[0] + canvas_range[2], canvas_range[1] + canvas_range[3]))
+        screenshot = ImageOps.grayscale(screenshot)
+
+        screenshot = screenshot.point(lambda x: 0 if x < 10 else 255,'1')
+
         #  matrix 16*10  LT (20,137) RB (398,767)
         pos_matrix = [ [0 for _ in range(10)]  for _ in range(16)]
 
@@ -178,39 +185,37 @@ class MyPet():
                 self.canvas.delete(ele)
         self.debug=[]
         
-        for index in range(1,9):
+        for index in range(1,10):
             pos_arr = pyautogui.locateAll(
                 needleImage = "./res/image_%d.png"%index,
                 haystackImage = screenshot,
-                grayscale=True,
-                region=canvas_range
+                grayscale=True
                 )
 
             for pos in pos_arr :
                 pt = pyautogui.center(pos)
                 
-                csx = self.canvas.winfo_rootx()
-                csy = self.canvas.winfo_rooty()
-
-                column = round((pt.x - csx - OFFSETX)/GRIDX + 0.5)-1
-                row = round((pt.y - csy - OFFSETY)/GRIDY + 0.5)-1
+                column = round((pt.x - OFFSETX)/GRIDX + 0.5)-1
+                row = round((pt.y - OFFSETY)/GRIDY + 0.5)-1
 
                 try:
                     pos_matrix[row][column] = index
                 except:
                     error = True
 
-                l,t,w,h = (pos.left-csx,pos.top-csy,pos.width,pos.height)
-                self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
-                self.debug.append(self.canvas.create_text(l,t, text="%d"%(index), anchor='sw',fill='red'))
+                l,t,w,h = (pos.left,pos.top,pos.width,pos.height)
+                
+                if OPTION_DEBUG:
+                    # self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
+                    self.debug.append(self.canvas.create_text(l,t, text="%d"%(index), anchor='sw',fill='red'))
 
         if not(error):
             pass
-        # ## Step2: solve
-        # solution = self.solve(pos_matrix)
+        ## Step2: solve
+        solution = self.solve(pos_matrix)
 
-        # ## Step3: run solution
-        # self.run_solution(solution)
+        ## Step3: run solution
+        self.run_solution(solution)
 
         pass
  
