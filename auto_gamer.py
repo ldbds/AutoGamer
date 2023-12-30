@@ -4,7 +4,8 @@ import tkinter as tk
 
 import win32gui as win32gui
 
-import time as time
+from PIL import Image, ImageOps
+
 ## tkinter 桌面宠物 https://blog.csdn.net/qq_44924355/article/details/128934280
 
 TRANSCOLOUR = "white"
@@ -111,6 +112,7 @@ class MyPet():
         pass
 
     def on_imagesearch(self,index):
+        screenshot = pyautogui.screenshot()
         canvas_range = (
             self.canvas.winfo_rootx(),
             self.canvas.winfo_rooty(),
@@ -118,13 +120,25 @@ class MyPet():
             self.canvas.winfo_height()
             )
 
+        screenshot = screenshot.crop((canvas_range[0], canvas_range[1], canvas_range[0] + canvas_range[2], canvas_range[1] + canvas_range[3]))
+        screenshot = ImageOps.grayscale(screenshot)
+
+        screenshot = screenshot.point(lambda x: 0 if x < 10 else 255,'1')
+
+        patternFileObj = open("./res/image_%d.png"%index, 'rb')
+        patternImg = Image.open(patternFileObj)
+        patternImg = ImageOps.grayscale(patternImg)
+        
+        patternImg = patternImg.point(lambda x: 0 if x < 10 else 255,'1')
+        # patternImg.save("./res/image_%d.png"%index)
+
         #  matrix 16*10  LT (20,137) RB (398,767)
         pos_matrix = [[0] * 10] * 16
 
-        pos_arr = pyautogui.locateAllOnScreen(
-            "./res/image_%d.png"%index, 
-            grayscale=True,
-            region=canvas_range
+        pos_arr = pyautogui.locateAll(
+            needleImage = patternImg,
+            haystackImage= screenshot,
+            grayscale=True
             )
 
 
@@ -133,21 +147,20 @@ class MyPet():
                 self.canvas.delete(ele)
         self.debug=[]
 
-        for pos in pos_arr :
-            pt = pyautogui.center(pos)
+        # for pos in pos_arr :
+        #     pt = pyautogui.center(pos)
             
-            csx = self.canvas.winfo_rootx()
-            csy = self.canvas.winfo_rooty()
-
-            column = round((pt.x - csx - OFFSETX)/GRIDX + 0.5)
-            row = round((pt.y - csy - OFFSETY)/GRIDY + 0.5)
+        #     column = round((pt.x  - OFFSETX)/GRIDX + 0.5)
+        #     row = round((pt.y  - OFFSETY)/GRIDY + 0.5)
        
-            l,t,w,h = (pos.left-csx,pos.top-csy,pos.width,pos.height)
-            self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
-            self.debug.append(self.canvas.create_text(l,t, text="%d,%d"%(row,column), anchor='sw',fill='red'))
+        #     l,t,w,h = (pos.left,pos.top,pos.width,pos.height)
+        #     self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
+        #     self.debug.append(self.canvas.create_text(l,t, text="%d,%d"%(row,column), anchor='sw',fill='red'))
         pass
 
     def on_runsolve(self):
+        
+        screenshot = pyautogui.screenshot()
         error = False
         ## Step1: sample
         canvas_range = (
@@ -166,8 +179,9 @@ class MyPet():
         self.debug=[]
         
         for index in range(1,9):
-            pos_arr = pyautogui.locateAllOnScreen(
-                "./res/image_%d.png"%index, 
+            pos_arr = pyautogui.locateAll(
+                needleImage = "./res/image_%d.png"%index,
+                haystackImage = screenshot,
                 grayscale=True,
                 region=canvas_range
                 )
