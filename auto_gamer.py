@@ -10,7 +10,7 @@ from PIL import Image, ImageOps
 
 TRANSCOLOUR = "white"
 
-OPTION_DEBUG = True
+OPTION_DEBUG = False
 
 OFFSETX = 20
 OFFSETY = 137
@@ -221,8 +221,53 @@ class MyPet():
  
     def solve(self, matrix):
         solution = []
-        solution.append(((1,1),(1,2)))
-        solution.append(((2,2),(3,2)))
+
+        def find_in_neighbour(row,col,target):
+            candi =[]
+
+            r = row ; c = col
+            while(r > 0):
+                r = r-1
+                if not(matrix[r][c] == 0):
+                    candi.append((r,c)); break
+
+            r = row ; c = col
+            while(r < len(matrix)-1):
+                r = r+1
+                if not(matrix[r][c] == 0):
+                    candi.append((r,c)); break
+                      
+            r = row ; c = col
+            while(c > 0):
+                c = c-1
+                if not(matrix[r][c] == 0):
+                    candi.append((r,c)); break
+                    
+            r = row ; c = col
+            while(c < len(matrix[0])-1):
+                c = c+1
+                if not(matrix[r][c] == 0):
+                    candi.append((r,c)); break
+
+            for (r, c) in candi:
+                if (matrix[r][c] == target):
+                    solution.append(((row,col),(r,c)))
+                    matrix[row][col] = 0
+                    matrix[r][c] = 0
+                    break
+        
+        # first 
+        for row in range(len(matrix)):
+            for col in range(len(matrix[0])):
+                val = matrix[row][col]
+                if (val >= 5):
+                    find_in_neighbour(row,col, 10-val)
+        # second
+        for row in range(len(matrix)):
+            for col in range(len(matrix[0])):
+                val = matrix[row][col]
+                if (val >= 5):
+                    find_in_neighbour(row,col, 10-val)
         return solution
 
 
@@ -232,16 +277,16 @@ class MyPet():
         csy = self.canvas.winfo_rooty()
 
         for step in solution:
-            x1 = (step[0][0] +0.5) * GRIDX+ OFFSETX +csx
-            y1 = (step[0][1] +0.5) * GRIDY+ OFFSETY +csy
-            x2 = (step[1][0] +0.5) * GRIDX+ OFFSETX +csx
-            y2 = (step[1][1] +0.5) * GRIDY+ OFFSETY +csy
+            x1 = (step[0][1] +0.5) * GRIDX+ OFFSETX +csx
+            y1 = (step[0][0] +0.5) * GRIDY+ OFFSETY +csy
+            x2 = (step[1][1] +0.5) * GRIDX+ OFFSETX +csx
+            y2 = (step[1][0] +0.5) * GRIDY+ OFFSETY +csy
 
             pyautogui.moveTo(x1,y1)
 
             pyautogui.mouseDown()
 
-            pyautogui.dragTo(x2,y2,duration=0.5)
+            pyautogui.dragTo(x2,y2,duration=0.2)
 
             pyautogui.mouseUp()
         pass
