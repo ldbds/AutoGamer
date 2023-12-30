@@ -1,4 +1,3 @@
-
 import pyautogui
 
 import tkinter as tk
@@ -29,14 +28,24 @@ class MyPet():
             text="拖动鼠标选择目标窗口,ALt+F4 关闭"
             )
         label1.pack()
-        button1 = tk.Button(
-            text="开始运行",
-            command=self.run_solve
-            )
-        button1.pack()
-        
+        frame = tk.Frame(self.root)
+        frame.pack()
+
+        for i in range(10):
+            tk.Button(
+                frame,
+                text="%d"%i,
+                command=lambda index=i: self.on_imagesearch(index)
+            ).pack(side="left")
+            
+        tk.Button(
+            frame,
+            text="RUN",
+            command=self.on_runsolve
+        ).pack(side="left")
+
         self.label1 = label1
-        self.button1 = button1
+        self.frame = frame
 
         self.canvas = tk.Canvas(self.root, borderwidth=5,highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH,expand=tk.Y)
@@ -56,7 +65,6 @@ class MyPet():
     def on_motion(self,event):
         if (self.state == self.LOCATE):
             handle = win32gui.WindowFromPoint((event.x_root,event.y_root))
-            self.button1.config(state="active")
 
             [left, top, right, bottom] = win32gui.GetWindowRect(handle);
             width = right-left
@@ -65,7 +73,7 @@ class MyPet():
 
             self.canvas.delete(self.last_rect);
             self.root.geometry("%sx%s+%s+%s" % (width, height+self.TOOLBAR_HEIGHT, left, top-self.TOOLBAR_HEIGHT))
-            self.last_rect = self.canvas.create_rectangle(0,0,width,height,fill=TRANSCOLOUR)
+            self.last_rect = self.canvas.create_rectangle(0,0,width,height,fill=TRANSCOLOUR,outline="blue")
 
         pass
         
@@ -82,47 +90,68 @@ class MyPet():
 
         if   (self.state == self.IDLE):
 
-            self.button1.config(state="active")
             self.label1.config(cursor="hand2")
 
             pass
         elif (self.state == self.LOCATE):
-            self.TOOLBAR_HEIGHT= self.label1.winfo_height() + self.button1.winfo_height()
+            self.TOOLBAR_HEIGHT= self.label1.winfo_height() + self.frame.winfo_height()
 
             self.label1.config(cursor="cross")
 
             pass
         elif (self.state == self.RUNNING):
 
-            self.button1.config(state="disabled")
             pass
-
-    def run_solve(self):
-        self.targetpx = pyautogui.screenshot()
-
-        self.on_statetrans(self.RUNNING)
-
-        self.on_imagesearch()
-
+    
         pass
 
-    def on_imagesearch(self):
-        ptx , pty = pyautogui.position() 
+    def on_imagesearch(self,index):
+        canvas_range = (
+            self.canvas.winfo_rootx(),
+            self.canvas.winfo_rooty(),
+            self.canvas.winfo_width(),
+            self.canvas.winfo_height()
+            )
 
-        csx = self.canvas.winfo_rootx()
-        csy = self.canvas.winfo_rooty()
+        #  matrix 16*10  LT (20,137) RB (398,767)
+        pos_matrix = [[0] * 16] * 10
 
-        cx = ptx-csx
-        cy = pty-csy
+        OFFSETX = 20
+        OFFSETY = 137
+        GRIDX = 42
+        GRIDY = 42
 
-        color = self.targetpx.getpixel((ptx,pty))
+        pos_arr = pyautogui.locateAllOnScreen(
+            "./res/image_%d.png"%index, 
+            grayscale=True,
+            region=canvas_range
+            )
 
-        if hasattr(self,"debugtxt"):
-            self.canvas.delete(self.debugtxt)
-        self.debugtxt = self.canvas.create_text(100,100,text='x:%d y:%d color:(%3d,%3d,%3d)'%(cx,cy,color[0],color[1],color[2]))
-        self.root.after(100, self.on_imagesearch)
 
+        if hasattr(self,"debug"):
+            for ele in self.debug:
+                self.canvas.delete(ele)
+        self.debug=[]
+
+        for pos in pos_arr :
+            pt = pyautogui.center(pos)
+            
+            csx = self.canvas.winfo_rootx()
+            csy = self.canvas.winfo_rooty()
+
+            column = round((pt.x - csx - OFFSETX)/GRIDX + 0.5)
+            row = round((pt.y - csy - OFFSETY)/GRIDY + 0.5)
+       
+            l,t,w,h = (pos.left-csx,pos.top-csy,pos.width,pos.height)
+            self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
+            self.debug.append(self.canvas.create_text(l,t, text="%d,%d"%(row,column), anchor='sw',fill='red'))
         pass
+
+    def on_runsolve(self):
+        pass
+        
+
+        
 
 if __name__=="__main__":
     mypet = MyPet()
