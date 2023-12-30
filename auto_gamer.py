@@ -6,6 +6,8 @@ import win32gui as win32gui
 
 from PIL import Image, ImageOps
 
+import threading
+
 ## tkinter 桌面宠物 https://blog.csdn.net/qq_44924355/article/details/128934280
 
 TRANSCOLOUR = "white"
@@ -16,7 +18,7 @@ OFFSETX = 20
 OFFSETY = 137
 GRIDX = 42
 GRIDY = 42
-
+ 
 class MyPet():
     def __init__(self):
         self.IDLE = 0
@@ -210,12 +212,12 @@ class MyPet():
                     self.debug.append(self.canvas.create_text(l,t, text="%d"%(index), anchor='sw',fill='red'))
 
         if not(error):
-            pass
-        ## Step2: solve
-        solution = self.solve(pos_matrix)
 
-        ## Step3: run solution
-        self.run_solution(solution)
+            ## Step2: solve
+            self.solution = self.solve(pos_matrix)
+
+            ## Step3: run solution
+            self.root.after(50, self.run_solution)
 
         pass
  
@@ -271,12 +273,14 @@ class MyPet():
         return solution
 
 
-    def run_solution(self, solution):
+    def run_solution(self):
+        # need self.solution
         
         csx = self.canvas.winfo_rootx()
         csy = self.canvas.winfo_rooty()
 
-        for step in solution:
+        try:
+            step = self.solution.pop(0)
             x1 = (step[0][1] +0.5) * GRIDX+ OFFSETX +csx
             y1 = (step[0][0] +0.5) * GRIDY+ OFFSETY +csy
             x2 = (step[1][1] +0.5) * GRIDX+ OFFSETX +csx
@@ -286,14 +290,18 @@ class MyPet():
 
             pyautogui.mouseDown()
 
-            pyautogui.dragTo(x2,y2,duration=0.2)
+            pyautogui.dragTo(x2,y2,duration=0.1)
 
             pyautogui.mouseUp()
+            
+            self.root.after(50, self.run_solution)
+        except:
+            pass
         pass
 
-        
 
 if __name__=="__main__":
     mypet = MyPet()
+
 
 
