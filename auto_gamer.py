@@ -12,7 +12,7 @@ import threading
 
 TRANSCOLOUR = "white"
 
-OPTION_DEBUG = False
+OPTION_DEBUG = True
 
 OFFSETX = 20
 OFFSETY = 137
@@ -50,7 +50,7 @@ class MyPet():
             
         tk.Button(
             frame,
-            text="RUN",
+            text="SOLVE",
             command=self.on_runsolve
         ).pack(side="left")
 
@@ -58,6 +58,12 @@ class MyPet():
             frame,
             text="TEST",
             command=self.on_runtest
+        ).pack(side="left")
+
+        tk.Button(
+            frame,
+            text="RUN",
+            command=self.run_solution
         ).pack(side="left")
 
         self.label1 = label1
@@ -214,7 +220,7 @@ class MyPet():
                 l,t,w,h = (pos.left,pos.top,pos.width,pos.height)
                 
                 if OPTION_DEBUG:
-                    # self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
+                    self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
                     self.debug.append(self.canvas.create_text(l,t, text="%d"%(index), anchor='sw',fill='red'))
 
         self.pos_matrix = pos_matrix
@@ -225,9 +231,10 @@ class MyPet():
             self.solution = self.solve(pos_matrix)
 
             ## Step3: run solution
-            self.root.after(50, self.run_solution)
+            self.label1.config(text="Search Result: %d Steps" % len(self.solution))
 
         pass
+
     def on_runtest(self):
         
         solution = []
@@ -287,10 +294,11 @@ class MyPet():
             y2 = (step[1][0] +0.5) * GRIDY+ OFFSETY
 
             self.debug.append(self.canvas.create_rectangle(x1, y1, x2, y2))
-
+            
         except :
             pass
         pass
+
     def solve(self, matrix):
         solution = []
 
@@ -368,19 +376,49 @@ class MyPet():
                             matrix[rr][cc] = 0
             pass
         
-        last_solution_steps = -1
-        if (last_solution_steps < len(solution)):
-            last_solution_steps = len(solution)
-            # repeat search 
-            for row in range(len(matrix)):
-                for col in range(len(matrix[0])):
-                    findblocks(row,col,10)
+        def findblocks_limitbymax(row, col, targetsum, max_limit):
+            matrix[row][col]
+
+            cols = []
+
+            r = row+1
+            c = col-1
+            while(r > row) and (c < len(matrix[0])-1):
+                c += 1
+                cols.append(c)
+                # Test
+                sum = 0 
+                max = 0
+                r = row-1
+                while(sum < targetsum) and (r < len(matrix)-1):
+                    r += 1
+                    for cc in cols:
+                        sum += matrix[r][cc]
+                        if max < matrix[r][cc] :
+                            max = matrix[r][cc]
+                pass
+            
+                if (sum == targetsum) and (max >= max_limit):
+                    solution.append(((row,col),(r,c)))
+                    for rr in range(row, r+1):
+                        for cc in range(col, c+1):
+                            matrix[rr][cc] = 0
+            pass
+
+        for max_limit in (9,8,7,6,5,4,0):
+            last_solution_steps = -1
+            if (last_solution_steps < len(solution)):
+                last_solution_steps = len(solution)
+                # repeat search 
+                for row in range(len(matrix)):
+                    for col in range(len(matrix[0])):
+                        findblocks_limitbymax(row,col,10,max_limit)
+                    pass
                 pass
             pass
         pass
         
         return solution
-
 
     def run_solution(self):
         # need self.solution
