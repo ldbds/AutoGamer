@@ -147,15 +147,15 @@ class MyPet():
                 self.canvas.delete(ele)
         self.debug=[]
 
-        # for pos in pos_arr :
-        #     pt = pyautogui.center(pos)
+        for pos in pos_arr :
+            pt = pyautogui.center(pos)
             
-        #     column = round((pt.x  - OFFSETX)/GRIDX + 0.5)
-        #     row = round((pt.y  - OFFSETY)/GRIDY + 0.5)
+            column = round((pt.x  - OFFSETX)/GRIDX + 0.5)
+            row = round((pt.y  - OFFSETY)/GRIDY + 0.5)
        
-        #     l,t,w,h = (pos.left,pos.top,pos.width,pos.height)
-        #     self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
-        #     self.debug.append(self.canvas.create_text(l,t, text="%d,%d"%(row,column), anchor='sw',fill='red'))
+            l,t,w,h = (pos.left,pos.top,pos.width,pos.height)
+            self.debug.append(self.canvas.create_rectangle(l,t,l+w,t+h))
+            self.debug.append(self.canvas.create_text(l,t, text="%d,%d"%(row,column), anchor='sw',fill='red'))
         pass
 
     def on_runsolve(self):
