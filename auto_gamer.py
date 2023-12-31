@@ -56,8 +56,8 @@ class MyPet():
 
         tk.Button(
             frame,
-            text="TEST",
-            command=self.on_runtest
+            text="CLR",
+            command=self.on_clear
         ).pack(side="left")
 
         tk.Button(
@@ -65,6 +65,13 @@ class MyPet():
             text="RUN",
             command=self.run_solution
         ).pack(side="left")
+        
+        tk.Button(
+            frame,
+            text="TEST",
+            command=self.on_runtest
+        ).pack(side="left")
+
 
         self.label1 = label1
         self.frame = frame
@@ -98,7 +105,19 @@ class MyPet():
             self.last_rect = self.canvas.create_rectangle(0,0,width,height,fill=TRANSCOLOUR,outline="blue")
 
         pass
+
+    def on_clear(self):
         
+        if hasattr(self,"debug"):
+            for ele in self.debug:
+                self.canvas.delete(ele)
+        self.debug=[]
+        
+        self.last_rect = self.canvas.create_rectangle(
+            0,0,self.root.winfo_width(),self.root.winfo_height()-self.TOOLBAR_HEIGHT,fill=TRANSCOLOUR,outline="blue")
+
+        pass    
+
     def on_mouseUp(self,event):
         
         self.on_statetrans(self.IDLE)
