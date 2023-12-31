@@ -158,13 +158,13 @@ class MyPet():
         screenshot = screenshot.crop((canvas_range[0], canvas_range[1], canvas_range[0] + canvas_range[2], canvas_range[1] + canvas_range[3]))
         screenshot = ImageOps.grayscale(screenshot)
 
-        screenshot = screenshot.point(lambda x: 0 if x < 10 else 255,'1')
+        screenshot = screenshot.point(lambda x: 0 if x < 1 else 255,'1')
 
-        patternFileObj = open("./res/image_%d.png"%index, 'rb')
+        patternFileObj = open("./res/image_origin_%d.png"%index, 'rb')
         patternImg = Image.open(patternFileObj)
         patternImg = ImageOps.grayscale(patternImg)
         
-        patternImg = patternImg.point(lambda x: 0 if x < 10 else 255,'1')
+        patternImg = patternImg.point(lambda x: 0 if x < 1 else 255,'1')
         # patternImg.save("./res/image_%d.png"%index)
 
         #  matrix 16*10  LT (20,137) RB (398,767)
